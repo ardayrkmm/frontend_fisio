@@ -39,6 +39,38 @@ class QuestionPage extends StatelessWidget {
       );
     }
 
+    Widget errorWidget(String message) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 60),
+            const SizedBox(height: 16),
+            Text(
+              "Terjadi Kesalahan",
+              style: itemStyle.copyWith(fontSize: 20, fontWeight: bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: itemStyle.copyWith(color: Colors.grey),
+            ),
+            const SizedBox(height: 24),
+            Buttons(
+              lebar: 200,
+              tinggi: 50,
+              nama: "Coba Lagi",
+              onPressed: () {
+                // Memicu ulang pengambilan data
+                context.read<QuestionBloc>().add(LoadQuestions());
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       body: BlocConsumer<QuestionBloc, QuestionState>(
         listener: (context, state) {
@@ -47,6 +79,9 @@ class QuestionPage extends StatelessWidget {
           }
         },
         builder: (context, state) {
+          if (state is QuestionError) {
+            return errorWidget(state.message);
+          }
           if (state is QuestionLoaded && state.questions.isNotEmpty) {
             final question = state.currentQuestion;
             final selected = state.answers[question.id] ?? [];

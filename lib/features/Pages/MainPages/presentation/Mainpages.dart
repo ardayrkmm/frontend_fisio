@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend_fisio/features/Pages/Aktifitas/presentation/AktifitasPage.dart';
-import 'package:frontend_fisio/features/Pages/Home/HomePages.dart';
+import 'package:frontend_fisio/features/Pages/Home/presentation/HomePages.dart';
 import 'package:frontend_fisio/features/Pages/ListLatihan/presentation/ListLatihan.dart';
 import 'package:frontend_fisio/features/Pages/MainPages/bloc/navbar_bloc.dart';
 import 'package:frontend_fisio/features/Pages/MainPages/bloc/navbar_state.dart';

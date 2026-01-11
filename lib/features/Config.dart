@@ -1,5 +1,5 @@
 class ApiConfig {
-  static const String baseUrl = "https://api.kamu.com/api/";
+  static const String baseUrl = "http://localhost:8080/api/";
 
   // Daftar Endpoints
   static const String login = "$baseUrl/login";

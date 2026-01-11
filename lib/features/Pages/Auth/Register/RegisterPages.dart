@@ -16,6 +16,7 @@ class RegisterPages extends StatelessWidget {
     final TextEditingController namaController = TextEditingController();
     final TextEditingController phoneController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
+
     Widget bagianAtas() {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -36,7 +37,8 @@ class RegisterPages extends StatelessWidget {
       return BlocConsumer<RegisterBloc, RegisterState>(
         listener: (context, state) {
           if (state is RegisterSuccess) {
-            Navigator.pushNamed(context, "/verifikasi");
+            Navigator.pushNamed(context, "/verifikasi",
+                arguments: state.verificationToken);
           }
           if (state is RegisterError) {
             ScaffoldMessenger.of(context).showSnackBar(

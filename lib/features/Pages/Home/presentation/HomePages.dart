@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:frontend_fisio/core/Utils/Tema.dart';
 import 'package:frontend_fisio/core/Widget/HomePages/CardArtikel.dart';
+import 'package:frontend_fisio/features/Pages/Home/bloc/home_bloc.dart';
+import 'package:frontend_fisio/features/Pages/Home/bloc/home_state.dart';
 
 class Homepages extends StatelessWidget {
   const Homepages({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Widget bagianProfil() {
+    Widget bagianProfil({
+      required String greeting,
+      required String namaUser,
+    }) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -28,7 +34,7 @@ class Homepages extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Selamat Pagi,',
+                      '$greeting,',
                       style: biruTerangStyle.copyWith(
                         fontWeight: bold,
                         fontSize: 24.0,
@@ -36,7 +42,7 @@ class Homepages extends StatelessWidget {
                     ),
                     SizedBox(height: 8.0),
                     Text(
-                      'Amad',
+                      '$namaUser',
                       style: itemStyle.copyWith(
                         fontWeight: regular,
                         fontSize: 16.0,
@@ -169,20 +175,39 @@ class Homepages extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Container(
-          margin: EdgeInsets.symmetric(
-            horizontal: marginHorizontal,
-            vertical: marginVertical,
-          ),
-          child: ListView(
-            children: [
-              bagianProfil(),
-              SizedBox(height: 18),
-              bagianLastLatihan(),
-              SizedBox(height: 18),
-              bagianArtikel(),
-            ],
-          ),
-        ),
+            margin: EdgeInsets.symmetric(
+              horizontal: marginHorizontal,
+              vertical: marginVertical,
+            ),
+            child: BlocConsumer<HomeBloc, HomeState>(
+              builder: (context, state) {
+                if (state is HomeLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is HomeLoaded) {
+                  return ListView(
+                    children: [
+                      bagianProfil(
+                        greeting: state.greeting,
+                        namaUser: state.namaUser,
+                      ),
+                      SizedBox(height: 18),
+                      bagianLastLatihan(),
+                      SizedBox(height: 18),
+                      bagianArtikel(),
+                    ],
+                  );
+                }
+                return const SizedBox();
+              },
+              listener: (context, state) {
+                if (state is HomeError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.message)),
+                  );
+                }
+              },
+            )),
       ),
     );
   }

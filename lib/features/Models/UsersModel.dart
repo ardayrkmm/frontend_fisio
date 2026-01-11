@@ -1,37 +1,29 @@
 class UserModel {
-  int Id;
-  String nama;
-  String email;
-  String password;
-  String role;
-  String no_telepon;
+  String? id;
+  String? nama;
+  String? email;
+  String? password;
+  String? role;
+  String? noTelepon;
+
   UserModel({
-    required this.Id,
-    required this.nama,
-    required this.email,
-    required this.password,
-    required this.role,
-    required this.no_telepon,
+    this.id,
+    this.nama,
+    this.email,
+    this.password,
+    this.role,
+    this.noTelepon,
   });
+
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      Id: json['id'],
-      nama: json['nama'],
-      email: json['email'],
-      password: json['password'],
-      role: json['role'],
-      no_telepon: json['no_telepon'],
+      // Gunakan .toString() dan tanda ? untuk keamanan
+      id: json['id_user']?.toString(),
+      nama: json['nama']?.toString(),
+      email: json['email']?.toString(),
+      password: json['password']?.toString(),
+      role: json['role']?.toString(),
+      noTelepon: json['no_telepon']?.toString(),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': Id,
-      'nama': nama,
-      'email': email,
-      'password': password,
-      'role': role,
-      'no_telepon': no_telepon,
-    };
   }
 }

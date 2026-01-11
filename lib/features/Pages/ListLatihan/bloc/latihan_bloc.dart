@@ -15,14 +15,36 @@ class LatihanBloc extends Bloc<LatihanEvent, LatihanState> {
     LoadLatihan event,
     Emitter<LatihanState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true));
-
-    final data = await repository.getLatihan(state.selectedWeek);
-
+    // 1. Set Loading dan Reset status error sebelumnya
     emit(state.copyWith(
-      latihanList: data,
-      isLoading: false,
-    ));
+        isLoading: true, isKondisiEmpty: false, errorMessage: null));
+
+    try {
+      // 2. Cek/Generate Jadwal Terlebih dahulu
+      // Di repository, fungsi ini harus melempar Exception("BELUM_ISI_KONDISI") jika 404
+      await repository.generateJadwalOtomatis();
+
+      // 3. Ambil data latihan berdasarkan minggu yang terpilih
+      final data = await repository.getLatihan(state.selectedWeek);
+
+      emit(state.copyWith(
+        latihanList: data,
+        isLoading: false,
+      ));
+    } catch (e) {
+      if (e.toString().contains("BELUM_ISI_KONDISI")) {
+        // 4. Jika BE balas 404, tandai state ini
+        emit(state.copyWith(
+          isLoading: false,
+          isKondisiEmpty: true,
+        ));
+      } else {
+        emit(state.copyWith(
+          isLoading: false,
+          errorMessage: e.toString(),
+        ));
+      }
+    }
   }
 
   Future<void> _onChangeWeek(
@@ -32,13 +54,17 @@ class LatihanBloc extends Bloc<LatihanEvent, LatihanState> {
     emit(state.copyWith(
       selectedWeek: event.week,
       isLoading: true,
+      isKondisiEmpty: false, // Reset saat ganti minggu
     ));
 
-    final data = await repository.getLatihan(event.week);
-
-    emit(state.copyWith(
-      latihanList: data,
-      isLoading: false,
-    ));
+    try {
+      final data = await repository.getLatihan(event.week);
+      emit(state.copyWith(
+        latihanList: data,
+        isLoading: false,
+      ));
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
+    }
   }
 }

@@ -13,6 +13,9 @@ class Verifikasipages extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextEditingController otpController = TextEditingController();
+    final String verificationToken =
+        ModalRoute.of(context)!.settings.arguments as String;
+
     Widget bagianAtas() {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -68,7 +71,8 @@ class Verifikasipages extends StatelessWidget {
                       onPressed: () {
                         context.read<VerifikasiBloc>().add(
                               VerifikasiSubmitted(
-                                token: '', // Ganti dengan token yang sesuai
+                                token:
+                                    verificationToken, // Ganti dengan token yang sesuai
                                 otp: otpController.text,
                               ),
                             );

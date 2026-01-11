@@ -38,7 +38,7 @@ class ProfilePage extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 45,
-                      backgroundImage: AssetImage(state.avatar),
+                      backgroundImage: AssetImage("assets/Bg.png"),
                     ),
                     Positioned(
                       bottom: 0,
@@ -60,7 +60,7 @@ class ProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  state.name,
+                  "amad",
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -69,7 +69,7 @@ class ProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  state.phone,
+                  "08xxxxxxxx",
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
@@ -83,40 +83,48 @@ class ProfilePage extends StatelessWidget {
     }
 
     Widget MenuProfil() {
-      return Expanded(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: const [
-            MenuItem(
-              icon: Icons.person_outline,
-              title: 'Profile',
-            ),
-            MenuItem(
-              icon: Icons.lock_outline,
-              title: 'Privacy Policy',
-            ),
-            MenuItem(
-              icon: Icons.settings_outlined,
-              title: 'Settings',
-            ),
-            MenuItem(
-              icon: Icons.logout,
-              title: 'Logout',
-            ),
-          ],
-        ),
-      );
+      return BlocConsumer<ProfileBloc, ProfileState>(builder: (context, state) {
+        return Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              const MenuItem(
+                icon: Icons.person_outline,
+                title: 'Profile',
+              ),
+              const MenuItem(
+                icon: Icons.lock_outline,
+                title: 'Privacy Policy',
+              ),
+              const MenuItem(
+                icon: Icons.settings_outlined,
+                title: 'Settings',
+              ),
+              GestureDetector(
+                onTap: () {
+                  context.read<ProfileBloc>().add(LogoutRequested());
+                },
+                child: MenuItem(
+                  icon: Icons.logout,
+                  title: 'Logout',
+                ),
+              ),
+            ],
+          ),
+        );
+      }, listener: (context, state) {
+        if (state is ProfileLoggedOut) {
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+      });
     }
 
-    return BlocProvider(
-      create: (_) => ProfileBloc()..add(LoadProfile()),
-      child: Scaffold(
-        body: Column(
-          children: [
-            Header(),
-            MenuProfil(),
-          ],
-        ),
+    return Scaffold(
+      body: Column(
+        children: [
+          Header(),
+          MenuProfil(),
+        ],
       ),
     );
   }

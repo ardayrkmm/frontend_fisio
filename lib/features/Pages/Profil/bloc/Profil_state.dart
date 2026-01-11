@@ -1,24 +1,17 @@
-import 'package:equatable/equatable.dart';
+abstract class ProfileState {}
 
-class ProfileState extends Equatable {
+class ProfileInitial extends ProfileState {}
+
+class ProfileLoaded extends ProfileState {
   final String name;
   final String phone;
   final String avatar;
 
-  const ProfileState({
+  ProfileLoaded({
     required this.name,
     required this.phone,
     required this.avatar,
   });
-
-  factory ProfileState.initial() {
-    return const ProfileState(
-      name: 'Arda Ym',
-      phone: '+6285951545918',
-      avatar: 'assets/profile.png',
-    );
-  }
-
-  @override
-  List<Object?> get props => [name, phone, avatar];
 }
+
+class ProfileLoggedOut extends ProfileState {}

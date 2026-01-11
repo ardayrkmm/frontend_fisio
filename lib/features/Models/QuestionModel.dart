@@ -13,10 +13,11 @@ class QuestionModel {
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) {
     return QuestionModel(
-      id: json['id'],
-      title: json['title'],
-      multiSelect: json['multi_select'],
-      options: (json['options'] as List)
+      id: json['id'] ?? '',
+      title: json['title'] ?? '',
+      // Samakan dengan tag json di Go: 'multiSelect'
+      multiSelect: json['multiSelect'] ?? false,
+      options: (json['options'] as List? ?? [])
           .map((e) => QuestionOption.fromJson(e))
           .toList(),
     );
@@ -26,16 +27,19 @@ class QuestionModel {
 class QuestionOption {
   final String id;
   final String label;
+  final int nilai;
 
   QuestionOption({
     required this.id,
     required this.label,
+    required this.nilai,
   });
 
   factory QuestionOption.fromJson(Map<String, dynamic> json) {
     return QuestionOption(
       id: json['id'],
       label: json['label'],
+      nilai: json['nilai'],
     );
   }
 }

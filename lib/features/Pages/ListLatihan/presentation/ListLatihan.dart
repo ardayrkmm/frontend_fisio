@@ -7,12 +7,53 @@ import '../bloc/latihan_state.dart';
 
 class LatihanPage extends StatelessWidget {
   const LatihanPage({super.key});
+  void _showKondisiDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // User wajib klik tombol
+      builder: (context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: const Text("Data Belum Lengkap"),
+          content: const Text(
+              "Anda belum mengisi kondisi kesehatan terbaru. Silahkan isi form terlebih dahulu."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Batal"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () {
+                Navigator.pop(context); // Tutup dialog
+                // Ganti dengan route halaman validasi kamu
+                Navigator.pushNamed(context, '/validasi');
+              },
+              child: const Text("Ayo Isi"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     Widget LatihanList() {
       return BlocBuilder<LatihanBloc, LatihanState>(
         builder: (context, state) {
+          if (state.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state.latihanList.isEmpty) {
+            return const Center(child: Text("Tidak ada latihan tersedia"));
+          }
           return ListView.builder(
             itemCount: state.latihanList.length,
             itemBuilder: (context, index) {
@@ -128,22 +169,29 @@ class LatihanPage extends StatelessWidget {
     return BlocProvider(
       create: (_) =>
           LatihanBloc(context.read<LatihanRepository>())..add(LoadLatihan()),
-      child: Scaffold(
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Daftar Latihan',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                weekSelector(),
-                const SizedBox(height: 20),
-                Expanded(child: LatihanList()),
-              ],
+      child: BlocListener<LatihanBloc, LatihanState>(
+        listener: (context, state) {
+          if (state.isKondisiEmpty) {
+            _showKondisiDialog(context);
+          }
+        },
+        child: Scaffold(
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Daftar Latihan',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  weekSelector(),
+                  const SizedBox(height: 20),
+                  Expanded(child: LatihanList()),
+                ],
+              ),
             ),
           ),
         ),
