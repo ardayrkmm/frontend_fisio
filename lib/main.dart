@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend_fisio/features/Pages/Auth/Login/LoginPages.dart';
 import 'package:frontend_fisio/features/Pages/Auth/Login/bloc/login_bloc.dart';
 import 'package:frontend_fisio/features/Pages/Auth/Register/RegisterPages.dart';
+import 'package:frontend_fisio/features/Pages/Profil/bloc/Profil_event.dart';
 import 'package:frontend_fisio/features/Pages/Auth/Register/bloc/register_bloc.dart';
 import 'package:frontend_fisio/features/Pages/Auth/ResetPassword/ResetPassword.dart';
 import 'package:frontend_fisio/features/Pages/Auth/ResetPassword/UbahPassword.dart';
@@ -14,13 +15,21 @@ import 'package:frontend_fisio/features/Pages/ListLatihan/bloc/latihan_bloc.dart
 import 'package:frontend_fisio/features/Pages/MainPages/bloc/navbar_bloc.dart';
 import 'package:frontend_fisio/features/Pages/MainPages/presentation/Mainpages.dart';
 import 'package:frontend_fisio/features/Pages/Profil/bloc/Profil_bloc.dart';
+import 'package:frontend_fisio/features/Pages/Profil/presetation/EditProfilePage.dart';
+import 'package:frontend_fisio/features/Pages/Profil/presetation/PrivacyPolicyPage.dart';
+import 'package:frontend_fisio/features/Pages/Profil/presetation/SettingsPage.dart';
 import 'package:frontend_fisio/features/Pages/ValidasiLatihan/bloc/Validasi_bloc.dart';
 import 'package:frontend_fisio/features/Pages/ValidasiLatihan/bloc/Validasi_event.dart';
 import 'package:frontend_fisio/features/Pages/ValidasiLatihan/presentation/ValidasiPage.dart';
 import 'package:frontend_fisio/features/Repository/AuthRepository.dart';
+import 'package:frontend_fisio/features/Pages/Jadwal/JadwalLatihanScreen.dart';
 import 'package:frontend_fisio/features/Repository/LatihanRepository.dart';
 import 'package:frontend_fisio/features/Repository/QuestionRepository.dart';
+import 'package:frontend_fisio/features/Repository/HomeRepository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frontend_fisio/features/Bloc/Auth/auth_bloc.dart';
+import 'package:frontend_fisio/features/Bloc/Auth/auth_event.dart';
+import 'package:frontend_fisio/features/Bloc/Auth/auth_state.dart';
 
 void main() async {
   // Pastikan binding Flutter sudah siap karena kita pakai async di main
@@ -45,6 +54,7 @@ class MyApp extends StatelessWidget {
         RepositoryProvider(create: (context) => QuestionRepository()),
         RepositoryProvider(create: (context) => Authrepository()),
         RepositoryProvider(create: (context) => LatihanRepository()),
+        RepositoryProvider(create: (context) => HomeRepository()),
       ],
       // 2. Bungkus dengan MultiBlocProvider agar semua Bloc terdaftar global
       child: MultiBlocProvider(
@@ -53,7 +63,8 @@ class MyApp extends StatelessWidget {
             create: (context) => LoginBloc(context.read<Authrepository>()),
           ),
           BlocProvider(
-              create: (context) => ProfileBloc(context.read<Authrepository>())),
+              create: (context) =>
+                  ProfileBloc(context.read<Authrepository>())..add(LoadProfile())),
           BlocProvider(
             create: (context) => VerifikasiBloc(context.read<Authrepository>()),
           ),
@@ -61,7 +72,7 @@ class MyApp extends StatelessWidget {
             create: (context) => LatihanBloc(context.read<LatihanRepository>()),
           ),
           BlocProvider(
-            create: (_) => HomeBloc()..add(LoadHomeUser()),
+            create: (context) => HomeBloc(context.read<HomeRepository>())..add(LoadHomeUser()),
           ),
           BlocProvider(
             create: (context) => RegisterBloc(context.read<Authrepository>()),
@@ -74,19 +85,31 @@ class MyApp extends StatelessWidget {
           BlocProvider(
             create: (context) => NavigationBloc(),
           ),
+          BlocProvider(
+            create: (context) => AuthBloc(authRepository: context.read<Authrepository>())..add(AppStarted()),
+          ),
         ],
-        child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          initialRoute: isLoggedIn ? '/main' : '/login',
-          routes: {
-            '/login': (context) => LoginPages(),
-            '/register': (context) => RegisterPages(),
-            '/verifikasi': (context) => Verifikasipages(),
-            '/resetpassword': (context) => ResetPasswordPages(),
-            '/ubahpassword': (context) => UbahpasswordPages(),
-            '/validasi': (context) => QuestionPage(),
-            '/main': (context) => Mainpages(),
-          },
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              // Gunakan home dengan logika AuthBloc daripada initialRoute
+              home: state is Authenticated ? Mainpages() : LoginPages(),
+              routes: {
+                '/login': (context) => LoginPages(),
+                '/register': (context) => RegisterPages(),
+                '/verifikasi': (context) => Verifikasipages(),
+                '/resetpassword': (context) => ResetPasswordPages(),
+                '/ubahpassword': (context) => UbahpasswordPages(),
+                '/validasi': (context) => QuestionPage(),
+                '/main': (context) => Mainpages(),
+                '/edit-profile': (context) => EditProfilePage(),
+                '/privacy-policy': (context) => PrivacyPolicyPage(),
+                '/settings': (context) => SettingsPage(),
+                '/jadwal': (context) => JadwalLatihanScreen(),
+              },
+            );
+          }
         ),
       ),
     );

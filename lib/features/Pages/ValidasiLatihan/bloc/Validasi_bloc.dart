@@ -84,9 +84,13 @@ class QuestionBloc extends Bloc<QuestionEvent, QuestionState> {
       );
     } else {
       // ⬅️ PERTANYAAN HABIS (EMPTY)
-      await repository.submitKondisiUser(state.answers);
-
-      emit(QuestionFinished(state.answers));
+      try {
+        emit(QuestionLoading()); // Opsional: Tampilkan loading saat submit
+        await repository.submitKondisiUser(state.answers);
+        emit(QuestionFinished(state.answers));
+      } catch (e) {
+        emit(QuestionError("Gagal mengirim data: $e"));
+      }
     }
   }
 }

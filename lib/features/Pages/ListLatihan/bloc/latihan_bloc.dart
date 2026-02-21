@@ -8,63 +8,59 @@ class LatihanBloc extends Bloc<LatihanEvent, LatihanState> {
 
   LatihanBloc(this.repository) : super(const LatihanState()) {
     on<LoadLatihan>(_onLoadLatihan);
-    on<ChangeWeek>(_onChangeWeek);
+    on<ChangeFase>(_onChangeFase);
   }
 
   Future<void> _onLoadLatihan(
     LoadLatihan event,
     Emitter<LatihanState> emit,
   ) async {
-    // 1. Set Loading dan Reset status error sebelumnya
-    emit(state.copyWith(
-        isLoading: true, isKondisiEmpty: false, errorMessage: null));
+    emit(state.copyWith(isLoading: true, isKondisiEmpty: false, errorMessage: null));
 
     try {
-      // 2. Cek/Generate Jadwal Terlebih dahulu
-      // Di repository, fungsi ini harus melempar Exception("BELUM_ISI_KONDISI") jika 404
-      await repository.generateJadwalOtomatis();
+      // 1. GENERATE JADWAL (Idempotent)
+      final generateResult = await repository.generateJadwalOtomatis();
+      final statusCode = generateResult['statusCode'] as int;
+      final message = generateResult['message'] as String;
 
-      // 3. Ambil data latihan berdasarkan minggu yang terpilih
-      final data = await repository.getLatihan(state.selectedWeek);
-
-      emit(state.copyWith(
-        latihanList: data,
-        isLoading: false,
-      ));
-    } catch (e) {
-      if (e.toString().contains("BELUM_ISI_KONDISI")) {
-        // 4. Jika BE balas 404, tandai state ini
-        emit(state.copyWith(
-          isLoading: false,
-          isKondisiEmpty: true,
-        ));
+      if (statusCode == 404 && message.toLowerCase().contains("isi form kondisi terlebih dahulu")) {
+         // Belum isi kondisi sama sekali
+         emit(state.copyWith(isLoading: false, isKondisiEmpty: true));
+         return; // Berhenti The flow stops here, no fetch fase.
+      } else if (statusCode == 400 || statusCode == 201 || statusCode == 200) {
+         // Lanjut fetch semua
       } else {
+         // Unexpected status
+         emit(state.copyWith(isLoading: false, errorMessage: message.isNotEmpty ? message : "Gagal memproses jadwal"));
+         return;
+      }
+
+      // 2. FETCH SEMUA JADWAL
+      final listProgram = await repository.getSemuaJadwal();
+
+      if (listProgram.isEmpty) {
         emit(state.copyWith(
           isLoading: false,
-          errorMessage: e.toString(),
+          allPrograms: [],
         ));
+        return;
       }
-    }
-  }
 
-  Future<void> _onChangeWeek(
-    ChangeWeek event,
-    Emitter<LatihanState> emit,
-  ) async {
-    emit(state.copyWith(
-      selectedWeek: event.week,
-      isLoading: true,
-      isKondisiEmpty: false, // Reset saat ganti minggu
-    ));
+      // Default the selected tab to the active program's phase (assuming latest/first in list)
+      final initialFase = listProgram.first.fase.isNotEmpty ? listProgram.first.fase : 'F1';
 
-    try {
-      final data = await repository.getLatihan(event.week);
       emit(state.copyWith(
-        latihanList: data,
+        allPrograms: listProgram,
+        selectedFase: initialFase,
         isLoading: false,
       ));
+
     } catch (e) {
       emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
     }
+  }
+
+  void _onChangeFase(ChangeFase event, Emitter<LatihanState> emit) {
+    emit(state.copyWith(selectedFase: event.fase));
   }
 }

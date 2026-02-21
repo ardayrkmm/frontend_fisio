@@ -1,0 +1,3 @@
+child_pose
+standing_shoulder
+standing_wall

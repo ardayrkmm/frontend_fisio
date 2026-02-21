@@ -1,38 +1,43 @@
 import 'package:equatable/equatable.dart';
-import 'package:frontend_fisio/features/Models/LatihanModel.dart';
+import 'package:frontend_fisio/features/Models/JadwalModels.dart';
 
 class LatihanState extends Equatable {
-  final List<LatihanModel> latihanList;
+  final List<JadwalFaseData> allPrograms; 
+  final String selectedFase;
   final bool isLoading;
-  final int selectedWeek;
-  final bool isKondisiEmpty; // Untuk mentrigger JDialog
+  final bool isKondisiEmpty;
   final String? errorMessage;
 
   const LatihanState({
-    this.latihanList = const [],
+    this.allPrograms = const [],
+    this.selectedFase = 'F1',
     this.isLoading = false,
-    this.selectedWeek = 1,
     this.isKondisiEmpty = false,
     this.errorMessage,
   });
 
   LatihanState copyWith({
-    List<LatihanModel>? latihanList,
+    List<JadwalFaseData>? allPrograms,
+    String? selectedFase,
     bool? isLoading,
-    int? selectedWeek,
     bool? isKondisiEmpty,
     String? errorMessage,
   }) {
     return LatihanState(
-      latihanList: latihanList ?? this.latihanList,
+      allPrograms: allPrograms ?? this.allPrograms,
+      selectedFase: selectedFase ?? this.selectedFase,
       isLoading: isLoading ?? this.isLoading,
-      selectedWeek: selectedWeek ?? this.selectedWeek,
       isKondisiEmpty: isKondisiEmpty ?? this.isKondisiEmpty,
       errorMessage: errorMessage,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [latihanList, isLoading, selectedWeek, isKondisiEmpty, errorMessage];
+  List<Object?> get props => [
+        allPrograms,
+        selectedFase,
+        isLoading,
+        isKondisiEmpty,
+        errorMessage
+      ];
 }

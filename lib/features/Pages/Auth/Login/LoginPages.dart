@@ -6,6 +6,10 @@ import 'package:frontend_fisio/core/Widget/Input.dart';
 import 'package:frontend_fisio/features/Pages/Auth/Login/bloc/login_bloc.dart';
 import 'package:frontend_fisio/features/Pages/Auth/Login/bloc/login_event.dart';
 import 'package:frontend_fisio/features/Pages/Auth/Login/bloc/login_state.dart';
+import 'package:frontend_fisio/features/Pages/Profil/bloc/Profil_bloc.dart';
+import 'package:frontend_fisio/features/Pages/Profil/bloc/Profil_event.dart';
+import 'package:frontend_fisio/features/Bloc/Auth/auth_bloc.dart';
+import 'package:frontend_fisio/features/Bloc/Auth/auth_event.dart';
 
 class LoginPages extends StatelessWidget {
   const LoginPages({super.key});
@@ -33,7 +37,14 @@ class LoginPages extends StatelessWidget {
     Widget bagianTengah() {
       return BlocConsumer<LoginBloc, LoginState>(listener: (context, state) {
         if (state is LoginSuccess) {
-          Navigator.pushNamed(context, '/main'); // Pindah halaman jika sukses
+          // Trigger load profile agar data user terupdate di seluruh aplikasi
+          // context.read<ProfileBloc>().add(LoadProfile()); // deprecated, handled by AuthBloc now
+          
+          if (state.user != null && state.token != null) {
+             context.read<AuthBloc>().add(LoggedIn(user: state.user!, token: state.token!));
+          }
+          
+          Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false); // Pindah halaman dan hapus stack history
         }
         if (state is LoginError) {
           // Tampilkan snackbar jika gagal

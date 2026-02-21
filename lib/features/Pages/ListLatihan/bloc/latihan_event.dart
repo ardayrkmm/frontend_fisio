@@ -7,11 +7,10 @@ abstract class LatihanEvent extends Equatable {
 
 class LoadLatihan extends LatihanEvent {}
 
-class ChangeWeek extends LatihanEvent {
-  final int week;
-
-  ChangeWeek(this.week);
+class ChangeFase extends LatihanEvent {
+  final String fase;
+  ChangeFase(this.fase);
 
   @override
-  List<Object?> get props => [week];
+  List<Object?> get props => [fase];
 }

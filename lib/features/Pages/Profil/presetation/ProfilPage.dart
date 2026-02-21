@@ -13,6 +13,21 @@ class ProfilePage extends StatelessWidget {
     Widget Header() {
       return BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
+          // Default data
+          String userName = "Pengguna";
+          String userPhone = "08xxxxxxxx";
+
+          if (state is ProfileLoaded) {
+            userName = state.user.nama ?? "Pengguna";
+            userPhone = state.user.noTelepon ?? "-";
+          } else if (state is ProfileLoading) {
+             return Container(
+               height: 250,
+               color: const Color(0xFF5B5AF6),
+               child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+             );
+          }
+
           return Container(
             width: double.infinity,
             padding: const EdgeInsets.only(top: 60, bottom: 30),
@@ -43,16 +58,21 @@ class ProfilePage extends StatelessWidget {
                     Positioned(
                       bottom: 0,
                       right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.edit,
-                          size: 16,
-                          color: Color(0xFF5B5AF6),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(context, '/edit-profile');
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.edit,
+                            size: 16,
+                            color: Color(0xFF5B5AF6),
+                          ),
                         ),
                       ),
                     ),
@@ -60,7 +80,7 @@ class ProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  "amad",
+                  userName,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -69,7 +89,7 @@ class ProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "08xxxxxxxx",
+                  userPhone,
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
@@ -88,21 +108,36 @@ class ProfilePage extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              const MenuItem(
-                icon: Icons.person_outline,
-                title: 'Profile',
-              ),
-              const MenuItem(
-                icon: Icons.lock_outline,
-                title: 'Privacy Policy',
-              ),
-              const MenuItem(
-                icon: Icons.settings_outlined,
-                title: 'Settings',
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/edit-profile');
+                },
+                child: const MenuItem(
+                  icon: Icons.person_outline,
+                  title: 'Profile',
+                ),
               ),
               GestureDetector(
                 onTap: () {
-                  context.read<ProfileBloc>().add(LogoutRequested());
+                  Navigator.pushNamed(context, '/privacy-policy');
+                },
+                child: const MenuItem(
+                  icon: Icons.lock_outline,
+                  title: 'Privacy Policy',
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/settings');
+                },
+                child: const MenuItem(
+                  icon: Icons.settings_outlined,
+                  title: 'Settings',
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  _showLogoutDialog(context);
                 },
                 child: MenuItem(
                   icon: Icons.logout,
@@ -126,6 +161,87 @@ class ProfilePage extends StatelessWidget {
           MenuProfil(),
         ],
       ),
+    );
+  }
+
+  /// Show logout confirmation dialog
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          child: Container(
+            padding: EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.logout,
+                  color: Colors.red,
+                  size: 50,
+                ),
+                SizedBox(height: 16.0),
+                Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 12.0),
+                Text(
+                  'Apakah Anda yakin ingin logout?',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 24.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[300],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      child: Text(
+                        'Batal',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<ProfileBloc>().add(LogoutRequested());
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      child: Text(
+                        'Logout',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

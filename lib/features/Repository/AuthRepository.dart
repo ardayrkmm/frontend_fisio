@@ -3,6 +3,7 @@ import 'package:frontend_fisio/features/Config.dart';
 import 'package:frontend_fisio/features/Models/Auth/LoginResponse.dart';
 import 'package:frontend_fisio/features/Models/Auth/RegisterResponse.dart';
 import 'package:frontend_fisio/features/Models/Auth/VerifikasiResponse.dart';
+import 'package:frontend_fisio/features/Models/UsersModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Authrepository {
@@ -19,6 +20,9 @@ class Authrepository {
       // --- BAGIAN UPDATE: SIMPAN KE SHARED PREFERENCES ---
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', loginData.token);
+      if (loginData.user.nama != null) {
+        await prefs.setString('nama_user', loginData.user.nama!);
+      }
       // --------------------------------------------------
 
       return loginData;
@@ -79,9 +83,102 @@ class Authrepository {
     return prefs.getString('token'); // Mengambil string dengan key 'token'
   }
 
+  // --- BAGIAN BARU: GET PROFILE ---
+  Future<UserModel> getProfile() async {
+    try {
+      final token = await getToken();
+      final response = await _dio.get(
+        '${ApiConfig.baseUrl}auth/profile',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      return UserModel.fromJson(response.data['user']);
+    } on DioException catch (e) {
+      throw e.response?.data['message'] ?? "Gagal mengambil profil";
+    }
+  }
+
+  // --- BAGIAN BARU: UPDATE PROFILE ---
+  Future<UserModel> updateProfile({
+    String? nama,
+    String? noTelepon,
+  }) async {
+    try {
+      final token = await getToken();
+      final response = await _dio.put(
+        '${ApiConfig.baseUrl}auth/update-profile',
+        data: {
+          if (nama != null) 'nama': nama,
+          if (noTelepon != null) 'no_telepon': noTelepon,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      // Update data di Shared Preferences jika perlu (opsional, tapi bagus untuk cache)
+      final user = UserModel.fromJson(response.data['user']);
+      final prefs = await SharedPreferences.getInstance();
+      if (user.nama != null) await prefs.setString('nama_user', user.nama!);
+
+      return user;
+    } on DioException catch (e) {
+      throw e.response?.data['message'] ?? "Gagal memperbarui profil";
+    }
+  }
+
 // Fungsi Logout
-  Future<void> logout() async {
+  Future<bool> hasToken() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token'); // Menghapus data berdasarkan key 'token'
+    return prefs.containsKey('token') && prefs.getString('token') != null;
+  }
+
+  Future<void> persistToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+  }
+
+  Future<void> deleteToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+  }
+
+  Future<void> persistUser(UserModel user) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (user.nama != null) await prefs.setString('nama_user', user.nama!);
+    if (user.id != null) await prefs.setString('id_user', user.id!);
+    if (user.email != null) await prefs.setString('email_user', user.email!);
+    if (user.noTelepon != null) await prefs.setString('phone_user', user.noTelepon!);
+  }
+
+  Future<UserModel?> getUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!prefs.containsKey('nama_user')) return null;
+    
+    return UserModel(
+      id: prefs.getString('id_user'),
+      nama: prefs.getString('nama_user'),
+      email: prefs.getString('email_user'),
+      noTelepon: prefs.getString('phone_user'),
+    );
+  }
+
+  Future<void> deleteUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('nama_user');
+    await prefs.remove('id_user');
+    await prefs.remove('email_user');
+    await prefs.remove('phone_user');
+  }
+
+  Future<void> logout() async {
+    await deleteToken();
+    await deleteUser();
   }
 }

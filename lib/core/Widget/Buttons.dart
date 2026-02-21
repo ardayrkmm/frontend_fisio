@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:frontend_fisio/core/Utils/Tema.dart';
 
 class Buttons extends StatelessWidget {
-  String nama;
-  double lebar;
-  double tinggi;
-  VoidCallback onPressed;
+  final String nama;
+  final double lebar;
+  final double tinggi;
+  final VoidCallback onPressed;
   Buttons({
     super.key,
     required this.nama,
@@ -25,7 +25,6 @@ class Buttons extends StatelessWidget {
           color: unguTerang,
           borderRadius: BorderRadius.circular(10.0),
         ),
-
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
           child: Center(

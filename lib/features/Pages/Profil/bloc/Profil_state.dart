@@ -1,17 +1,20 @@
+import 'package:frontend_fisio/features/Models/UsersModel.dart';
+
 abstract class ProfileState {}
 
 class ProfileInitial extends ProfileState {}
 
-class ProfileLoaded extends ProfileState {
-  final String name;
-  final String phone;
-  final String avatar;
+class ProfileLoading extends ProfileState {}
 
-  ProfileLoaded({
-    required this.name,
-    required this.phone,
-    required this.avatar,
-  });
+class ProfileLoaded extends ProfileState {
+  final UserModel user;
+
+  ProfileLoaded({required this.user});
+}
+
+class ProfileError extends ProfileState {
+  final String message;
+  ProfileError(this.message);
 }
 
 class ProfileLoggedOut extends ProfileState {}
